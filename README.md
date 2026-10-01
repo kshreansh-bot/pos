@@ -1,79 +1,183 @@
-# Supermarket Billing System
+# Supermarket POS & Inventory System
 
-A production-ready supermarket billing system with inventory management, POS, and analytics dashboard.
+A production-ready Supermarket Point of Sale (POS) and Inventory Management System built with FastAPI, SQLAlchemy 2.x, React, and TypeScript.
 
 ## Features
 
-- **User Authentication** - Secure login with role-based access (Admin, Manager, Cashier)
-- **Dashboard** - Real-time stats, charts, and recent transactions
-- **Inventory Management** - Product tracking with low-stock alerts
-- **Point of Sale** - Quick billing with barcode support
-- **Transaction History** - Complete sales records with search/filter
-- **Analytics** - Daily revenue trends, category sales charts
+- **Authentication & Authorization**: JWT-based auth with role-based access control (Admin, Manager, Cashier, Inventory Manager)
+- **Money Handling**: All amounts stored as integer paise (no floating-point errors)
+- **GST Support**: GST-inclusive pricing with tax extraction and grouping
+- **Stock Management**: Batch tracking with FEFO (First Expiry, First Out)
+- **POS**: Keyboard-first interface with barcode scanning
+- **Invoicing**: Sequential invoice numbers with QR codes for public access
+- **Audit Trail**: Complete history of price changes, stock movements, and transactions
+
+## Tech Stack
+
+### Backend
+- **FastAPI**: Modern async web framework
+- **SQLAlchemy 2.x**: ORM with async support
+- **Alembic**: Database migrations
+- **Pydantic v2**: Data validation
+- **SQLite**: Database (WAL mode enabled)
+- **JWT + bcrypt**: Authentication
+
+### Frontend
+- **React 18**: UI library
+- **TypeScript**: Type safety
+- **Vite**: Build tool
+- **React Router**: Navigation
 
 ## Quick Start
 
-### 1. Install Dependencies
+### Prerequisites
+- Python 3.11+
+- Node.js 18+
+- Git
+
+### Backend Setup
+
+1. **Navigate to backend directory**
+   ```bash
+   cd backend
+   ```
+
+2. **Create and activate virtual environment**
+   ```bash
+   python -m venv venv
+   # On Windows:
+   venv\Scripts\activate
+   # On Linux/Mac:
+   source venv/bin/activate
+   ```
+
+3. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Create .env file**
+   ```bash
+   copy .env.example .env
+   # Edit .env and set SECRET_KEY to a secure random string (min 32 chars)
+   ```
+
+5. **Initialize database**
+   ```bash
+   # Create database schema
+   python -c "import asyncio; from app.database import init_db; asyncio.run(init_db())"
+   ```
+
+6. **Seed demo data**
+   ```bash
+   python scripts/seed_data.py
+   ```
+
+7. **Run the server**
+   ```bash
+   uvicorn app.main:app --reload --port 8000
+   ```
+
+   The API will be available at: http://localhost:8000
+   - API Documentation: http://localhost:8000/api/docs
+   - Health Check: http://localhost:8000/health
+
+### Frontend Setup (Coming in Phase 4)
 
 ```bash
-pip install -r requirements.txt
+cd frontend
+npm install
+npm run dev
 ```
-
-### 2. Initialize Database with Sample Data
-
-```bash
-python setup_data.py
-```
-
-This creates:
-- 3 users (admin, manager, cashier)
-- 30 sample products across categories
-- 5 sample customers
-- 30 days of transaction history
-
-### 3. Run the Application
-
-```bash
-python app.py
-```
-
-Then open http://localhost:5000 in your browser.
 
 ## Login Credentials
 
-| Role | Username | Password |
-|------|----------|----------|
-| Admin | admin | admin123 |
-| Manager | manager1 | manager123 |
-| Cashier | cashier1 | cashier123 |
+After running the seed script, use these credentials:
+
+| Role       | Username   | Password     | Permissions |
+|------------|------------|--------------|-------------|
+| Admin      | admin      | admin123     | Full access |
+| Manager    | manager1   | manager123   | Products, inventory, reports |
+| Cashier    | cashier1   | cashier123   | POS, sales |
+| Inventory  | inventory1 | inventory123 | Stock management |
+
+## API Endpoints
+
+### Authentication
+- `POST /auth/login` - Login with username/password
+- `POST /auth/logout` - Logout (client-side token deletion)
+- `GET /auth/me` - Get current user info
+
+### Users (Admin only)
+- `GET /users` - List all users
+- `GET /users/{id}` - Get user by ID
+- `POST /users` - Create new user
+- `PUT /users/{id}` - Update user
+
+### Health
+- `GET /health` - Health check
+
+## Testing
+
+Run the test suite:
+
+```bash
+cd backend
+pytest
+```
+
+Run with coverage:
+
+```bash
+pytest --cov=app tests/
+```
 
 ## Project Structure
 
 ```
 supermarket_billing_system/
-├── app.py              # Main Flask application
-├── setup_data.py       # Database initialization script
-├── requirements.txt    # Python dependencies
-├── README.md          # This file
-└── templates/
-    ├── login.html     # Login page
-    └── dashboard.html # Main dashboard
+├── backend/
+│   ├── app/
+│   │   ├── api/              # API routes
+│   │   ├── services/         # Business logic
+│   │   ├── utils/            # Utilities (money, errors)
+│   │   ├── models.py         # SQLAlchemy models
+│   │   ├── schemas.py        # Pydantic schemas
+│   │   ├── database.py       # Database session
+│   │   ├── config.py         # Settings
+│   │   └── main.py           # FastAPI app
+│   ├── migrations/           # Alembic migrations
+│   ├── tests/                # Test suite
+│   ├── scripts/              # Utility scripts
+│   ├── requirements.txt      # Python dependencies
+│   └── .env.example          # Environment template
+├── frontend/                 # React frontend (Phase 4)
+├── CLAUDE.md                 # Development guide
+└── README.md                 # This file
 ```
 
-## API Endpoints
+## Development Phase Status
 
-- `POST /login` - User authentication
-- `GET /api/stats` - Dashboard statistics
-- `GET/POST /api/products` - Product management
-- `GET/POST /api/transactions` - Transaction management
-- `GET /api/customers` - Customer management
-- `GET /api/charts/daily-revenue` - Revenue chart data
-- `GET /api/charts/category-sales` - Category sales chart
+- ✅ **Phase 1: Foundation** - Project setup, auth, DB models
+- ⏳ **Phase 2: Products & Inventory** - Products, suppliers, batches
+- ⏳ **Phase 3: Billing Engine** - Invoice creation, QR codes
+- ⏳ **Phase 4: POS UI** - React frontend
+- ⏳ **Phase 5: Returns & Audit** - Returns, voids, audit log
+- ⏳ **Phase 6: Reports** - Analytics and reporting
 
-## Tech Stack
+## Core Business Rules
 
-- **Backend**: Flask (Python)
-- **Database**: SQLite with SQLAlchemy
-- **Frontend**: HTML5, CSS3, JavaScript
-- **Charts**: Plotly.js
-- **Authentication**: Session-based with password hashing
+1. **Money**: All amounts stored as integer paise (1 rupee = 100 paise)
+2. **GST**: Selling prices are GST-inclusive; tax extracted per line
+3. **Stock**: FEFO (First Expiry, First Out) with batch tracking
+4. **Transactions**: Atomic operations with full rollback on failure
+5. **Invoices**: Sequential numbering with immutable snapshots
+6. **Audit**: Complete trail of all critical operations
+
+## License
+
+Proprietary - All rights reserved
+
+## Support
+
+For issues or questions, please refer to CLAUDE.md for detailed documentation.

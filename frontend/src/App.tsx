@@ -1,0 +1,45 @@
+import { useState, useEffect } from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import LoginPage from './pages/LoginPage'
+import DashboardPage from './pages/DashboardPage'
+import { api } from './services/api'
+import { User } from './types'
+import './App.css'
+
+export default function App() {
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    // Check if user is logged in
+    if (api.getToken()) {
+      api.getCurrentUser()
+        .then(setUser)
+        .catch(() => {
+          api.setToken(null)
+          setUser(null)
+        })
+        .finally(() => setLoading(false))
+    } else {
+      setLoading(false)
+    }
+  }, [])
+
+  if (loading) {
+    return <div className="loading">Loading...</div>
+  }
+
+  return (
+    <Routes>
+      <Route
+        path="/login"
+        element={user ? <Navigate to="/dashboard" /> : <LoginPage onLogin={setUser} />}
+      />
+      <Route
+        path="/dashboard"
+        element={user ? <DashboardPage user={user} onLogout={() => setUser(null)} /> : <Navigate to="/login" />}
+      />
+      <Route path="/" element={<Navigate to={user ? "/dashboard" : "/login"} />} />
+    </Routes>
+  )
+}
