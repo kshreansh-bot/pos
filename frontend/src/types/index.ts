@@ -177,3 +177,75 @@ export interface Customer {
   is_active: boolean;
   created_at: string;
 }
+
+export interface LoyaltyAdjustRequest {
+  points_delta: number;
+  reason: string;
+}
+
+export interface CustomerInvoiceBrief {
+  id: number;
+  invoice_number: string;
+  total_amount_paise: number;
+  payment_method: string;
+  status: string;
+  created_at: string;
+}
+
+export interface CustomerDetail extends Customer {
+  invoices: CustomerInvoiceBrief[];
+}
+
+// Report Types
+export interface GstTaxSlabSummary {
+  gst_rate: number;
+  base_amount_paise: number;
+  tax_amount_paise: number;
+  total_amount_paise: number;
+}
+
+export interface PaymentMethodSummary {
+  method: string;
+  count: number;
+  total_amount_paise: number;
+}
+
+export interface SalesSummaryResponse {
+  period_start: string;
+  period_end: string;
+  total_invoices_completed: number;
+  total_invoices_cancelled: number;
+  total_invoices_returned: number;
+  gross_sales_paise: number;
+  total_discount_paise: number;
+  total_tax_paise: number;
+  net_sales_paise: number;
+  average_order_value_paise: number;
+  payment_methods: PaymentMethodSummary[];
+  tax_slabs: GstTaxSlabSummary[];
+}
+
+export interface CashierPerformanceItem {
+  user_id: number;
+  username: string;
+  full_name: string;
+  role: string;
+  invoices_count: number;
+  completed_count: number;
+  cancelled_count: number;
+  total_sales_paise: number;
+  average_ticket_paise: number;
+}
+
+export interface AuditLogResponse {
+  id: number;
+  user_id: number;
+  username?: string;
+  action: string;
+  entity_type: string;
+  entity_id: number;
+  old_values?: string;
+  new_values?: string;
+  reason?: string;
+  created_at: string;
+}

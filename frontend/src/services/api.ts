@@ -5,6 +5,10 @@ import {
   Product,
   Invoice,
   InvoiceCreate,
+  Customer,
+  SalesSummaryResponse,
+  CashierPerformanceItem,
+  AuditLogResponse
 } from '../types';
 
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
@@ -126,6 +130,41 @@ class ApiClient {
 
   getPublicBillHtmlUrl(publicToken: string): string {
     return `${API_BASE}/bills/${publicToken}/html`;
+  }
+
+  // Customers
+  async searchCustomers(query: string): Promise<Customer[]> {
+    return this.request<Customer[]>(`/customers/search?q=${encodeURIComponent(query)}`);
+  }
+
+  async listCustomers(skip: number = 0, limit: number = 50, search: string = ''): Promise<{items: Customer[], total: number}> {
+    return this.request<{items: Customer[], total: number}>(`/customers/?skip=${skip}&limit=${limit}&search=${encodeURIComponent(search)}`);
+  }
+
+  async adjustLoyaltyPoints(customerId: number, points_delta: number, reason: string): Promise<Customer> {
+    return this.request<Customer>(`/customers/${customerId}/loyalty/adjust`, {
+      method: 'POST',
+      body: JSON.stringify({ points_delta, reason })
+    });
+  }
+
+  // Reports
+  async getSalesSummary(startDate?: string, endDate?: string): Promise<SalesSummaryResponse> {
+    let url = '/reports/sales/summary?';
+    if (startDate) url += `start_date=${startDate}&`;
+    if (endDate) url += `end_date=${endDate}`;
+    return this.request<SalesSummaryResponse>(url);
+  }
+
+  async getCashierPerformance(startDate?: string, endDate?: string): Promise<CashierPerformanceItem[]> {
+    let url = '/reports/cashiers?';
+    if (startDate) url += `start_date=${startDate}&`;
+    if (endDate) url += `end_date=${endDate}`;
+    return this.request<CashierPerformanceItem[]>(url);
+  }
+
+  async getAuditLogs(skip: number = 0, limit: number = 50): Promise<{items: AuditLogResponse[], total: number}> {
+    return this.request<{items: AuditLogResponse[], total: number}>(`/reports/audit-logs?skip=${skip}&limit=${limit}`);
   }
 }
 

@@ -59,6 +59,14 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
           <div className="card">
+            <h3>Management Tools</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
+              <button className="btn-secondary" onClick={() => navigate('/returns')}>Returns & Cancellations</button>
+              <button className="btn-secondary" onClick={() => navigate('/customers')}>Customer & Loyalty</button>
+              <button className="btn-secondary" onClick={() => navigate('/reports')}>Store Reports</button>
+            </div>
+          </div>
+          <div className="card">
             <h3>Staff Information</h3>
             <table>
               <tbody>
@@ -87,14 +95,14 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
           </div>
 
           <div className="card">
-            <h3>System Phase Status</h3>
+            <h3>System Status</h3>
             <ul style={{ marginLeft: '1.5rem', marginTop: '0.5rem', lineHeight: '1.8' }}>
-              <li>✅ <strong>Phase 1:</strong> Foundation (FastAPI, SQLite WAL, JWT Auth, Money in Paise)</li>
-              <li>✅ <strong>Phase 2:</strong> Products & FEFO Inventory Engine</li>
-              <li>✅ <strong>Phase 3:</strong> Billing Engine, Tax Grouping & QR Receipt</li>
-              <li>✅ <strong>Phase 4:</strong> POS UI (Keyboard-First Checkout)</li>
-              <li>⏳ <strong>Phase 5:</strong> Customer Loyalty & Returns Management</li>
-              <li>⏳ <strong>Phase 6:</strong> Reports & Demo Data Seeder</li>
+              <li>✅ <strong>Phase 1:</strong> Foundation</li>
+              <li>✅ <strong>Phase 2:</strong> Inventory Engine</li>
+              <li>✅ <strong>Phase 3:</strong> Billing Engine</li>
+              <li>✅ <strong>Phase 4:</strong> POS UI</li>
+              <li>✅ <strong>Phase 5:</strong> Customer Loyalty & Returns</li>
+              <li>✅ <strong>Phase 6:</strong> Reports & Demo Seeder</li>
             </ul>
           </div>
         </div>
