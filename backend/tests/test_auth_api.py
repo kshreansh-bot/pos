@@ -1,6 +1,6 @@
 """Tests for authentication API endpoints."""
 import pytest
-from httpx import AsyncClient
+from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from app.main import app
@@ -35,7 +35,7 @@ async def client(test_db):
 
     app.dependency_overrides[get_db_session] = override_get_db
 
-    async with AsyncClient(app=app, base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         yield client
 
     app.dependency_overrides.clear()
@@ -165,7 +165,7 @@ class TestGetCurrentUser:
     async def test_get_current_user_missing_header(self, client):
         response = await client.get("/auth/me")
 
-        assert response.status_code == 403
+        assert response.status_code == 401
 
     async def test_get_current_user_invalid_token(self, client):
         response = await client.get(
@@ -173,7 +173,7 @@ class TestGetCurrentUser:
             headers={"Authorization": "Bearer invalid_token"}
         )
 
-        assert response.status_code == 403
+        assert response.status_code == 401
 
     async def test_get_current_user_malformed_header(self, client):
         response = await client.get(
@@ -181,7 +181,7 @@ class TestGetCurrentUser:
             headers={"Authorization": "InvalidFormat"}
         )
 
-        assert response.status_code == 403
+        assert response.status_code == 401
 
     async def test_get_current_user_deleted_user(self, client, test_db, test_user):
         # Login to get token

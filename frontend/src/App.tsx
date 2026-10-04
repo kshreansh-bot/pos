@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
+import POSPage from './pages/POSPage'
 import { api } from './services/api'
 import { User } from './types'
 import './App.css'
@@ -26,7 +27,7 @@ export default function App() {
   }, [])
 
   if (loading) {
-    return <div className="loading">Loading...</div>
+    return <div className="loading">Loading Supermarket POS...</div>
   }
 
   return (
@@ -39,7 +40,12 @@ export default function App() {
         path="/dashboard"
         element={user ? <DashboardPage user={user} onLogout={() => setUser(null)} /> : <Navigate to="/login" />}
       />
+      <Route
+        path="/pos"
+        element={user ? <POSPage user={user} onLogout={() => setUser(null)} /> : <Navigate to="/login" />}
+      />
       <Route path="/" element={<Navigate to={user ? "/dashboard" : "/login"} />} />
+      <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   )
 }

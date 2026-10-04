@@ -168,6 +168,55 @@ class ProductService:
         return products[:limit], len(products)
 
     @staticmethod
+    async def get_expiring_soon_items(
+        session: AsyncSession,
+        days: int = 7,
+        skip: int = 0,
+        limit: int = 50,
+    ) -> List[Product]:
+        """Get products with batches expiring within the specified number of days.
+
+        Args:
+            session: Database session
+            days: Number of days to look ahead
+            skip: Number of products to skip for pagination
+            limit: Maximum number of products to return
+
+        Returns:
+            List of products with expiring batches
+        """
+        from datetime import timedelta
+        from sqlalchemy import func
+
+        # Calculate the expiry threshold date
+        now = datetime.utcnow()
+        expiry_threshold = now + timedelta(days=days)
+
+        # Query for products with batches that are expiring soon
+        # and have quantity > 0
+        query = (
+            select(Product)
+            .join(StockBatch, Product.id == StockBatch.product_id)
+            .where(
+                and_(
+                    Product.is_active == True,
+                    StockBatch.is_active == True,
+                    StockBatch.quantity > 0,
+                    StockBatch.expiry_date.isnot(None),
+                    StockBatch.expiry_date <= expiry_threshold,
+                    StockBatch.expiry_date > now,
+                )
+            )
+            .distinct()
+            .order_by(StockBatch.expiry_date.asc())
+            .offset(skip)
+            .limit(limit)
+        )
+
+        result = await session.execute(query)
+        return result.scalars().all()
+
+    @staticmethod
     async def update_product(
         session: AsyncSession,
         product_id: int,

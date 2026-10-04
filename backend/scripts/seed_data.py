@@ -198,24 +198,23 @@ async def create_seed_data():
                 purchase_price_paise=purchase,
                 selling_price_paise=mrp,  # Same as MRP initially
                 gst_rate=gst,
-                stock_quantity=stock,
                 reorder_level=10,
                 default_discount_percent=0,
                 is_active=True
             )
             session.add(product)
-            products.append(product)
+            products.append((product, stock))
 
         await session.flush()
         print(f"✓ Created {len(products_data)} products")
 
         # Create stock batches (with some expiring soon for testing)
-        for i, product in enumerate(products):
+        for i, (product, stock) in enumerate(products):
             batch = StockBatch(
                 product_id=product.id,
                 batch_number=f"BATCH-{product.id:04d}-001",
-                quantity=product.stock_quantity,
-                initial_quantity=product.stock_quantity,
+                quantity=stock,
+                initial_quantity=stock,
                 purchase_price_paise=product.purchase_price_paise,
                 expiry_date=datetime.utcnow() + timedelta(days=365 if i % 3 != 0 else 5),  # Some expiring soon
                 is_active=True

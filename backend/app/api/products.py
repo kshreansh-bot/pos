@@ -217,3 +217,28 @@ async def get_low_stock(
 
     products, total = await product_service.get_low_stock_items(session, skip=0, limit=limit)
     return [ProductResponse.model_validate(p) for p in products]
+
+
+@router.get("/alerts/expiring-soon", response_model=list[ProductResponse])
+async def get_expiring_soon(
+    session: AsyncSession = Depends(get_db_session),
+    authorization: str = Header(None),
+    days: int = Query(7, ge=1, le=90),
+    limit: int = Query(50, ge=1, le=100),
+):
+    """Get products with batches expiring within the specified number of days.
+
+    Args:
+        session: Database session
+        authorization: Authorization header
+        days: Number of days to look ahead (default 7)
+        limit: Maximum number of products to return
+
+    Returns:
+        List of products with expiring batches
+    """
+    token = extract_token_from_header(authorization)
+    decode_token(token)
+
+    products = await product_service.get_expiring_soon_items(session, days=days, limit=limit)
+    return [ProductResponse.model_validate(p) for p in products]

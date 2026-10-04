@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing Engine Architecture</title>
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #f0f1f3;
+            --text-primary: #1a1a1a;
+            --text-secondary: #4a4a4a;
+            --text-tertiary: #6a6a6a;
+            --border: #e0e0e0;
+            --accent-blue: #0066cc;
+            --accent-green: #059669;
+            --accent-amber: #d97706;
+            --accent-red: #dc2626;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --code-bg: #1e293b;
+            --code-text: #e2e8f0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+                --bg-primary: #1a1a1a;
+                --bg-secondary: #2d2d2d;
+                --bg-tertiary: #3a3a3a;
+                --text-primary: #f0f0f0;
+                --text-secondary: #d0d0d0;
+                --text-tertiary: #a0a0a0;
+                --border: #444444;
+                --accent-blue: #3b82f6;
+                --accent-green: #10b981;
+                --accent-amber: #fbbf24;
+                color-scheme: dark;
+            }
+        }
+
+        :root[data-theme="dark"] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #3a3a3a;
+            --text-primary: #f0f0f0;
+            --text-secondary: #d0d0d0;
+            --text-tertiary: #a0a0a0;
+            --border: #444444;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-amber: #fbbf24;
+            color-scheme: dark;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            padding: 2rem 1.5rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 3rem;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .phase-badge {
+            display: inline-block;
+            background: var(--accent-blue);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .toc {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 3rem;
+            border-left: 4px solid var(--accent-blue);
+        }
+
+        .toc h2 {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .toc ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .toc a {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+
+        .toc a:hover {
+            text-decoration: underline;
+        }
+
+        .section {
+            margin-bottom: 3rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            padding-top: 1rem;
+            scroll-margin-top: 80px;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+        }
+
+        h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        ul, ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        .code-block {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .inline-code {
+            background: var(--bg-tertiary);
+            color: var(--accent-blue);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card.accent {
+            border-left: 4px solid var(--accent-green);
+        }
+
+        .card.warning {
+            border-left: 4px solid var(--accent-amber);
+        }
+
+        .card.info {
+            border-left: 4px solid var(--accent-blue);
+        }
+
+        .flow-diagram {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 2rem 1.5rem;
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+        }
+
+        .flow-box {
+            display: inline-block;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--accent-blue);
+            padding: 1rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+            color: var(--text-primary);
+            min-width: 180px;
+            text-align: center;
+            margin: 0 0.75rem;
+        }
+
+        .flow-arrow {
+            display: inline-block;
+            color: var(--accent-blue);
+            margin: 0 0.5rem;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:nth-child(even) {
+            background: var(--bg-primary);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.825rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+
+        .badge.method {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .badge.service {
+            background: var(--accent-green);
+            color: white;
+        }
+
+        .badge.error {
+            background: var(--error);
+            color: white;
+        }
+
+        .requirement-list {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .requirement-item {
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--accent-blue);
+            padding: 1rem;
+            border-radius: 4px;
+        }
+
+        .requirement-item strong {
+            color: var(--accent-blue);
+        }
+
+        .highlight {
+            background: rgba(212, 212, 16, 0.1);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            color: var(--text-primary);
+        }
+
+        .column-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .column-2 {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            h2 {
+                font-size: 1.4rem;
+            }
+
+            .flow-diagram {
+                padding: 1rem;
+            }
+
+            body {
+                padding: 1.5rem 1rem;
+            }
+        }
+
+        .algorithm-box {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            border-left: 4px solid var(--accent-green);
+        }
+
+        .method-signature {
+            background: var(--bg-tertiary);
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 1rem;
+            border-left: 3px solid var(--accent-blue);
+            overflow-x: auto;
+        }
+
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .checklist li {
+            padding-left: 1.5rem;
+            position: relative;
+            margin-bottom: 0.75rem;
+        }
+
+        .checklist li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .risk-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .risk-list li {
+            padding-left: 1.5rem;
+            position: relative;
+            margin-bottom: 0.75rem;
+        }
+
+        .risk-list li:before {
+            content: "⚠";
+            position: absolute;
+            left: 0;
+            font-size: 1.1em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <span class="phase-badge">PHASE 3 DESIGN</span>
+            <h1>Billing Engine Architecture</h1>
+            <p class="subtitle">Design specification for invoice creation, tax calculation, QR codes, and public bill pages</p>
+        </header>
+
+        <div class="toc">
+            <h2>Contents</h2>
+            <ul>
+                <li><a href="#overview">Architecture Overview</a></li>
+                <li><a href="#service-design">BillingService Design</a></li>
+                <li><a href="#schemas">Invoice Schema & Snapshots</a></li>
+                <li><a href="#tax-calculation">Tax Calculation Algorithm</a></li>
+                <li><a href="#qr-tokens">QR Token Generation</a></li>
+                <li><a href="#public-api">Public Bill Page API</a></li>
+                <li><a href="#transaction-flow">Database Transaction Flow</a></li>
+                <li><a href="#edge-cases">Edge Cases & Considerations</a></li>
+                <li><a href="#implementation-checklist">Implementation Checklist</a></li>
+            </ul>
+        </div>
+
+        <div class="section" id="overview">
+            <h2>1. Architecture Overview</h2>
+
+            <p>The billing engine is the core POS functionality that converts cart items into legally compliant invoices. It operates as a tightly coordinated system with three primary concerns:</p>
+
+            <div class="column-2">
+                <div class="card accent">
+                    <h4>Transaction Atomicity</h4>
+                    <p>Single database transaction encompassing validation, creation, stock deduction, and ledger recording. All or nothing.</p>
+                </div>
+                <div class="card accent">
+                    <h4>Data Immutability</h4>
+                    <p>Invoice snapshots preserve product data at time of sale, preventing retroactive changes to pricing or tax rates.</p>
+                </div>
+            </div>
+
+            <div class="column-2">
+                <div class="card accent">
+                    <h4>Tax Compliance</h4>
+                    <p>Prices are GST-inclusive; tax is extracted per line by rate, grouped for reporting.</p>
+                </div>
+                <div class="card accent">
+                    <h4>Public Access</h4>
+                    <p>QR code directs to rate-limited public bill page with no authentication required.</p>
+                </div>
+            </div>
+
+            <h3>High-Level Components</h3>
+            <table>
+                <tr>
+                    <th>Component</th>
+                    <th>Responsibility</th>
+                    <th>Scope</th>
+                </tr>
+                <tr>
+                    <td><strong>BillingService</strong></td>
+                    <td>Orchestrates invoice creation with business logic</td>
+                    <td>Service layer; handles all validation and coordination</td>
+                </tr>
+                <tr>
+                    <td><strong>TaxCalculator</strong></td>
+                    <td>Extracts tax from GST-inclusive prices by rate</td>
+                    <td>Pure function; testable, reusable</td>
+                </tr>
+                <tr>
+                    <td><strong>QRTokenGenerator</strong></td>
+                    <td>Generates cryptographically random 128-bit tokens</td>
+                    <td>Utility; non-sequential, non-enumerable</td>
+                </tr>
+                <tr>
+                    <td><strong>InvoiceAPI</strong></td>
+                    <td>HTTP routes for invoice creation and retrieval</td>
+                    <td>API layer; role-based access control</td>
+                </tr>
+                <tr>
+                    <td><strong>PublicBillAPI</strong></td>
+                    <td>Rate-limited public endpoint for bill viewing</td>
+                    <td>API layer; no authentication, token-based access</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section" id="service-design">
+            <h2>2. BillingService Design</h2>
+
+            <h3>Core Methods</h3>
+
+            <h4>create_invoice()</h4>
+            <div class="method-signature">
+async def create_invoice(
+    session: AsyncSession,
+    customer_id: Optional[int],
+    user_id: int,
+    items: List[InvoiceItemRequest],
+    payment_method: str,
+    discount_percent_bill: int = 0,
+    amount_tendered_paise: Optional[int] = None,
+    notes: Optional[str] = None
+) -> Invoice
+            </div>
+
+            <p><strong>Purpose:</strong> Orchestrates the complete invoice creation flow with atomic transaction semantics.</p>
+
+            <div class="card info">
+                <h4>Business Logic</h4>
+                <ol>
+                    <li><strong>Validate inputs</strong> – payment method, discount limits, customer exists</li>
+                    <li><strong>Fetch current product data</strong> – prices, tax rates, availability</li>
+                    <li><strong>Allocate stock</strong> – FEFO logic per product, check expiry dates</li>
+                    <li><strong>Calculate totals</strong> – per-line tax extraction, discount application</li>
+                    <li><strong>Create invoice</strong> – atomic: insert invoice + items + stock movements</li>
+                    <li><strong>Generate QR token</strong> – random 128-bit, ensure uniqueness</li>
+                    <li><strong>Return complete invoice</strong> – with all snapshots and ledger entries</li>
+                </ol>
+            </div>
+
+            <h4>cancel_invoice()</h4>
+            <div class="method-signature">
+async def cancel_invoice(
+    session: AsyncSession,
+    invoice_id: int,
+    user_id: int,
+    reason: str
+) -> Invoice
+            </div>
+
+            <p><strong>Purpose:</strong> Reverses an invoice, returning stock to inventory and creating reversing stock movements.</p>
+
+            <div class="card info">
+                <h4>Business Logic</h4>
+                <ul>
+                    <li>Only completed invoices can be cancelled</li>
+                    <li>For each invoice item, return quantity to batch with FEFO re-sorting</li>
+                    <li>Create reversing stock movements with audit trail</li>
+                    <li>Mark invoice as CANCELLED, keep original data intact</li>
+                    <li>Record audit log with cancellation reason</li>
+                </ul>
+            </div>
+
+            <h4>apply_item_discount()</h4>
+            <div class="method-signature">
+async def apply_item_discount(
+    session: AsyncSession,
+    product_id: int,
+    discount_percent: int,
+    user_id: int
+) -> bool
+            </div>
+
+            <p><strong>Purpose:</strong> Validates cashier discount limits before applying line-item discount.</p>
+
+            <div class="card warning">
+                <h4>Validation Rules</h4>
+                <ul>
+                    <li>Discount percent must be 0-100</li>
+                    <li>User's max_discount_percent from User.max_discount_percent</li>
+                    <li>Manager role can override cashier limits (role-based in API)</li>
+                    <li>Return true if allowed, raise ValidationError if not</li>
+                </ul>
+            </div>
+
+            <h4>get_invoice_by_public_token()</h4>
+            <div class="method-signature">
+async def get_invoice_by_public_token(
+    session: AsyncSession,
+    public_token: str
+) -> Optional[Invoice]
+            </div>
+
+            <p><strong>Purpose:</strong> Retrieve invoice by its unique QR token for public bill page.</p>
+
+            <ul>
+                <li>No authentication required</li>
+                <li>Return complete invoice with all items and tax breakdown</li>
+                <li>Include customer name only if set; never expose customer contact details publicly</li>
+            </ul>
+
+            <h3>Error Handling Strategy</h3>
+
+            <div class="card">
+                <table>
+                    <tr>
+                        <th>Scenario</th>
+                        <th>Error Type</th>
+                        <th>Action</th>
+                    </tr>
+                    <tr>
+                        <td>Product not found</td>
+                        <td><span class="badge error">NotFoundError</span></td>
+                        <td>Rollback transaction</td>
+                    </tr>
+                    <tr>
+                        <td>Insufficient stock (non-expired)</td>
+                        <td><span class="badge error">StockError</span></td>
+                        <td>Rollback transaction</td>
+                    </tr>
+                    <tr>
+                        <td>Batch expired or expiring</td>
+                        <td><span class="badge error">ValidationError</span></td>
+                        <td>Reject transaction</td>
+                    </tr>
+                    <tr>
+                        <td>Invalid payment method</td>
+                        <td><span class="badge error">ValidationError</span></td>
+                        <td>Fail before transaction</td>
+                    </tr>
+                    <tr>
+                        <td>Discount exceeds limit</td>
+                        <td><span class="badge error">ValidationError</span></td>
+                        <td>Fail before transaction</td>
+                    </tr>
+                    <tr>
+                        <td>Duplicate QR token</td>
+                        <td><span class="badge error">DataIntegrityError</span></td>
+                        <td>Retry token generation</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="section" id="schemas">
+            <h2>3. Invoice Schema & Snapshots</h2>
+
+            <h3>Schema Design Philosophy</h3>
+            <p>Invoice snapshots are immutable copies of product data taken at time of sale. This prevents retroactive price changes from affecting historical invoices' tax calculations and printed bills.</p>
+
+            <h3>InvoiceItem Snapshot Fields</h3>
+
+            <div class="card">
+                <h4>Product Snapshot (copied from Product model)</h4>
+                <ul class="checklist">
+                    <li><span class="inline-code">product_name</span> – From Product.name</li>
+                    <li><span class="inline-code">product_barcode</span> – From Product.barcode</li>
+                    <li><span class="inline-code">product_unit</span> – From Product.unit (e.g., "kg", "liter")</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h4>Pricing & Tax Snapshot (captured at sale time)</h4>
+                <ul class="checklist">
+                    <li><span class="inline-code">unit_price_paise</span> – Product.selling_price_paise at time of sale (GST-inclusive)</li>
+                    <li><span class="inline-code">gst_rate</span> – From Product.gst_rate (0, 5, 12, 18, or 28)</li>
+                    <li><span class="inline-code">tax_amount_paise</span> – Extracted via tax calculation formula</li>
+                    <li><span class="inline-code">discount_percent</span> – Applied discount at line level</li>
+                    <li><span class="inline-code">discount_paise</span> – Discount amount in paise</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h4>Line Totals</h4>
+                <ul class="checklist">
+                    <li><span class="inline-code">quantity</span> – Units sold</li>
+                    <li><span class="inline-code">line_total_paise</span> – (unit_price_paise × quantity) - discount_paise</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h4>Inventory Linkage</h4>
+                <ul class="checklist">
+                    <li><span class="inline-code">batch_id</span> – Foreign key to StockBatch (nullable if no expiry tracking)</li>
+                    <li><span class="inline-code">product_id</span> – Foreign key to Product (for audit trail only)</li>
+                </ul>
+            </div>
+
+            <h3>Invoice Header Fields</h3>
+
+            <table>
+                <tr>
+                    <th>Field</th>
+                    <th>Type</th>
+                    <th>Purpose</th>
+                </tr>
+                <tr>
+                    <td><span class="inline-code">invoice_number</span></td>
+                    <td>String (50)</td>
+                    <td>Format: INV-YYYY-NNNNNN (e.g., INV-2026-000001), unique, sequential per year</td>
+                </tr>
+                <tr>
+                    <td><span class="inline-code">public_token</span></td>
+                    <td>String (32)</td>
+                    <td>Random 128-bit hex token (not sequential), links to QR code</td>
+                </tr>
+                <tr>
+                    <td><span class="inline-code">customer_id</span></td>
+                    <td>Int (nullable)</td>
+                    <td>Link to Customer for loyalty; null for walk-in customers</td>
+                </tr>
+                <tr>
+                    <td><span class="inline-code">user_id</span></td>
+                    <td>Int</td>
+                    <td>Cashier who created invoice</td>
+                </tr>
+                <tr>
+                    <td><span class="inline-code">payment_method</span></td>
+                    <td>String</td>
+                    <td>One of: cash, card, upi</td>
+                </tr>
+                <tr>
+                    <td><span class="inline-code">status</span></td>
+                    <td>Enum</td>
+                    <td>completed, cancelled, returned</td>
+                </tr>
+            </table>
+
+            <h3>Financial Summary Fields</h3>
+
+            <div class="card info">
+                <h4>All amounts stored as paise (integer)</h4>
+                <ul>
+                    <li><span class="inline-code">subtotal_paise</span> – Sum of (unit_price × qty) before any discount or tax extraction</li>
+                    <li><span class="inline-code">total_discount_paise</span> – Sum of line discounts + bill-level discount</li>
+                    <li><span class="inline-code">total_tax_paise</span> – Sum of extracted taxes by rate</li>
+                    <li><span class="inline-code">total_amount_paise</span> – subtotal - discount (tax is implicit in prices)</li>
+                </ul>
+            </div>
+
+            <h3>Payment Fields</h3>
+
+            <table>
+                <tr>
+                    <th>Field</th>
+                    <th>When Required</th>
+                    <th>Purpose</th>
+                </tr>
+                <tr>
+                    <td><span class="inline-code">amount_tendered_paise</span></td>
+                    <td>For cash payments</td>
+                    <td>Amount customer paid (for change calculation)</td>
+                </tr>
+                <tr>
+                    <td><span class="inline-code">change_due_paise</span></td>
+                    <td>For cash payments</td>
+                    <td>Calculated as amount_tendered - total_amount</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section" id="tax-calculation">
+            <h2>4. Tax Calculation Algorithm</h2>
+
+            <h3>Principle: GST-Inclusive Pricing</h3>
+            <p>All prices in the system are GST-inclusive (the displayed/selling price includes tax). The algorithm extracts tax from this inclusive price.</p>
+
+            <h3>Tax Extraction Formula</h3>
+
+            <div class="algorithm-box">
+// Given:
+//   unit_price_paise (GST-inclusive price customer pays)
+//   gst_rate (0, 5, 12, 18, or 28)
+//   quantity
+
+// Tax amount per unit:
+tax_per_unit = (unit_price_paise × gst_rate) ÷ (100 + gst_rate)
+
+// Base price per unit (excluding tax):
+base_per_unit = unit_price_paise - tax_per_unit
+
+// For a line:
+line_quantity = quantity
+line_tax = (tax_per_unit × line_quantity)
+line_base = (base_per_unit × line_quantity)
+line_inclusive = line_base + line_tax
+
+// Verify:
+line_inclusive ≈ (unit_price_paise × line_quantity)
+            </div>
+
+            <h3>Example Calculation</h3>
+
+            <div class="card">
+                <h4>Product: 1 kg Wheat Flour @ INR 180/kg (18% GST)</h4>
+                <div class="code-block">
+unit_price_paise = 18000 (INR 180.00, GST-inclusive)
+gst_rate = 18%
+
+tax_per_unit = (18000 × 18) ÷ (100 + 18)
+            = 324000 ÷ 118
+            = 2745.76... paise
+            ≈ 2746 paise (rounded)
+
+base_per_unit = 18000 - 2746 = 15254 paise
+
+For quantity = 2:
+  line_tax = 2746 × 2 = 5492 paise (INR 54.92)
+  line_base = 15254 × 2 = 30508 paise (INR 305.08)
+  line_inclusive = 30508 + 5492 = 36000 paise (INR 360.00)
+
+Verify: 18000 × 2 = 36000 ✓
+                </div>
+            </div>
+
+            <h3>Rounding Strategy</h3>
+
+            <div class="card warning">
+                <h4>Critical for accuracy</h4>
+                <ul>
+                    <li><strong>Per-unit tax:</strong> Round to nearest paise using standard banker's rounding</li>
+                    <li><strong>Per-line tax:</strong> Sum of (tax_per_unit × qty), not (tax_total ÷ qty)</li>
+                    <li><strong>Invoice total:</strong> Sum of all line taxes; slight discrepancy from manual calculation expected</li>
+                    <li><strong>Report verification:</strong> Verify taxes group correctly by rate, not individual line exactness</li>
+                </ul>
+            </div>
+
+            <h3>Tax Grouping by Rate</h3>
+
+            <p>After all items are added, group taxes by GST rate for reporting and compliance:</p>
+
+            <div class="code-block">
+tax_breakdown = {
+    0: { rate: 0, amount_paise: 0 },
+    5: { rate: 5, amount_paise: X },
+    12: { rate: 12, amount_paise: Y },
+    18: { rate: 18, amount_paise: Z },
+    28: { rate: 28, amount_paise: W }
+}
+
+Sum for each rate:
+  0% tax: sum(line_tax where gst_rate == 0)
+  5% tax: sum(line_tax where gst_rate == 5)
+  ... etc
+            </div>
+
+            <h3>TaxCalculator Service Class</h3>
+
+            <div class="method-signature">
+class TaxCalculator:
+    @staticmethod
+    def extract_tax(unit_price_paise: int, gst_rate: int) -> int:
+        """Extract tax from GST-inclusive price."""
+
+    @staticmethod
+    def calculate_line_tax(unit_price_paise: int, gst_rate: int,
+                          quantity: int) -> int:
+        """Calculate tax for a line item."""
+
+    @staticmethod
+    def group_taxes(invoice_items: List[InvoiceItem]) -> Dict[int, int]:
+        """Group taxes by rate from invoice items."""
+            </div>
+
+            <h3>Discount Application Logic</h3>
+
+            <div class="card">
+                <h4>Line-Level Discount</h4>
+                <p>Applied after tax is extracted, on the GST-inclusive price:</p>
+                <div class="code-block">
+discount_paise = (unit_price_paise × quantity × discount_percent) ÷ 100
+line_total_paise = (unit_price_paise × quantity) - discount_paise
+                </div>
+            </div>
+
+            <div class="card">
+                <h4>Bill-Level Discount</h4>
+                <p>Applied to invoice subtotal (sum of line totals before bill discount):</p>
+                <div class="code-block">
+bill_discount_paise = (subtotal_paise × discount_percent_bill) ÷ 100
+final_total_paise = subtotal_paise - bill_discount_paise
+                </div>
+            </div>
+        </div>
+
+        <div class="section" id="qr-tokens">
+            <h2>5. QR Token Generation Strategy</h2>
+
+            <h3>Token Specification</h3>
+
+            <table>
+                <tr>
+                    <th>Property</th>
+                    <th>Value</th>
+                    <th>Rationale</th>
+                </tr>
+                <tr>
+                    <td>Size</td>
+                    <td>128 bits (16 bytes)</td>
+                    <td>Industry standard; provides ~10^38 possible values</td>
+                </tr>
+                <tr>
+                    <td>Encoding</td>
+                    <td>Hexadecimal (32 chars)</td>
+                    <td>URL-safe, easily printed/scanned, database-friendly</td>
+                </tr>
+                <tr>
+                    <td>Generation</td>
+                    <td>Cryptographically random</td>
+                    <td>Not sequential; prevents enumeration attacks</td>
+                </tr>
+                <tr>
+                    <td>Collision Handling</td>
+                    <td>Retry with exponential backoff</td>
+                    <td>Retry up to 5 times; fail if collision persists</td>
+                </tr>
+            </table>
+
+            <h3>QRTokenGenerator Implementation</h3>
+
+            <div class="method-signature">
+class QRTokenGenerator:
+    MAX_RETRIES = 5
+
+    @staticmethod
+    async def generate_unique_token(session: AsyncSession) -> str:
+        """Generate unique 128-bit hex token."""
+            </div>
+
+            <div class="algorithm-box">
+Algorithm: generate_unique_token()
+  for attempt = 0 to MAX_RETRIES:
+    token = random_hex(128 bits / 4 = 32 hex chars)
+
+    // Check uniqueness
+    existing = Query(Invoice).filter(public_token == token).first()
+    if existing is None:
+      return token
+
+    // Exponential backoff: 10ms × 2^attempt
+    sleep(10ms × 2^attempt)
+
+  raise DataIntegrityError("Failed to generate unique token after retries")
+            </div>
+
+            <h3>QR Code Format</h3>
+
+            <div class="card info">
+                <h4>Suggested QR Code URL</h4>
+                <div class="code-block">
+https://your-domain.com/bills/{public_token}
+
+or
+
+https://your-domain.com/api/v1/public/bills/{public_token}
+                </div>
+
+                <h4>QR Code Metadata (optional)</h4>
+                <p>Include in QR code data or as separate fields:</p>
+                <ul>
+                    <li>Invoice number (for customer reference)</li>
+                    <li>Invoice date/time</li>
+                    <li>Total amount (for quick verification)</li>
+                </ul>
+            </div>
+
+            <h3>Token Uniqueness Guarantee</h3>
+
+            <ul class="checklist">
+                <li>Database constraint: UNIQUE(public_token) on Invoice table</li>
+                <li>Application retry logic with exponential backoff</li>
+                <li>Probability of collision over 10 million invoices: ~10^-15 (negligible)</li>
+            </ul>
+        </div>
+
+        <div class="section" id="public-api">
+            <h2>6. Public Bill Page API Design</h2>
+
+            <h3>API Endpoint Specification</h3>
+
+            <div class="method-signature">
+GET /api/v1/public/bills/{public_token}
+            </div>
+
+            <h4>Request</h4>
+            <ul>
+                <li>No authentication required</li>
+                <li>public_token: 32-char hex string (from QR code)</li>
+            </ul>
+
+            <h4>Response (200 OK)</h4>
+            <div class="code-block">
+{
+  "invoice_number": "INV-2026-000001",
+  "created_at": "2026-10-01T14:30:00Z",
+  "customer_name": "John Doe", // null if walk-in
+
+  "items": [
+    {
+      "product_name": "Wheat Flour 1kg",
+      "barcode": "8901234567890",
+      "unit": "kg",
+      "quantity": 2,
+      "unit_price_paise": 18000,
+      "gst_rate": 18,
+      "discount_percent": 0,
+      "discount_paise": 0,
+      "tax_amount_paise": 5492,
+      "line_total_paise": 36000
+    }
+  ],
+
+  "tax_breakdown": {
+    "0": { "rate": 0, "amount_paise": 0 },
+    "5": { "rate": 5, "amount_paise": 0 },
+    "12": { "rate": 12, "amount_paise": 0 },
+    "18": { "rate": 18, "amount_paise": 5492 },
+    "28": { "rate": 28, "amount_paise": 0 }
+  },
+
+  "subtotal_paise": 36000,
+  "total_discount_paise": 0,
+  "total_tax_paise": 5492,
+  "total_amount_paise": 36000,
+  "payment_method": "cash",
+  "status": "completed"
+}
+            </div>
+
+            <h4>Response (404 Not Found)</h4>
+            <div class="code-block">
+{ "detail": "Bill not found" }
+            </div>
+
+            <h4>Response (429 Too Many Requests)</h4>
+            <p>Rate limiting enforced per IP address.</p>
+            <div class="code-block">
+{ "detail": "Rate limit exceeded. Max 100 requests per hour." }
+            </div>
+
+            <h3>Rate Limiting Strategy</h3>
+
+            <div class="card warning">
+                <h4>Protection against enumeration attacks</h4>
+                <ul>
+                    <li>Limit: 100 requests per IP per hour</li>
+                    <li>Implementation: Use Redis or in-memory cache with TTL</li>
+                    <li>Header: Retry-After (seconds) in 429 response</li>
+                    <li>Logging: Track rate-limit violations for security monitoring</li>
+                </ul>
+            </div>
+
+            <h3>Security Considerations</h3>
+
+            <div class="card warning">
+                <h4>Data Exposure</h4>
+                <ul class="risk-list">
+                    <li>Never expose customer phone/email/address on public page</li>
+                    <li>Customer name only if set; default to "Customer" for anonymity</li>
+                    <li>No user/cashier name exposed (user_id only in backend)</li>
+                    <li>No payment card details, UPI IDs, or any sensitive payment info</li>
+                </ul>
+            </div>
+
+            <h3>Public Bill Page UI (Frontend)</h3>
+
+            <div class="card">
+                <h4>Recommended Layout</h4>
+                <ul>
+                    <li><strong>Header:</strong> Invoice number, date, shop name</li>
+                    <li><strong>Items Table:</strong> Product, quantity, price, discount, tax, line total</li>
+                    <li><strong>Tax Summary:</strong> Grouped by rate (0%, 5%, 12%, 18%, 28%)</li>
+                    <li><strong>Totals:</strong> Subtotal, discount, total tax, final amount</li>
+                    <li><strong>Payment:</strong> Method (cash/card/upi) – no amounts</li>
+                    <li><strong>Mobile Optimized:</strong> Single column, readable on phone screens</li>
+                    <li><strong>Print-Friendly:</strong> CSS for clean printing without QR code or controls</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section" id="transaction-flow">
+            <h2>7. Database Transaction Flow for Invoice Creation</h2>
+
+            <h3>Complete Atomic Flow</h3>
+
+            <div class="flow-diagram">
+                <div class="flow-box">Validate Input</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-box">Fetch Products</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-box">Allocate Stock</div>
+                <br/>
+                <div class="flow-box">Calculate Totals</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-box">BEGIN TRANSACTION</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-box">Create Invoice</div>
+                <br/>
+                <div class="flow-box">Create Items</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-box">Deduct Stock</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-box">Record Movements</div>
+                <br/>
+                <div class="flow-box">Generate QR Token</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-box">COMMIT/ROLLBACK</div>
+            </div>
+
+            <h3>Transaction Phases</h3>
+
+            <h4>Phase 1: Pre-Transaction Validation (no database changes)</h4>
+            <ul>
+                <li>Validate payment method (cash, card, upi)</li>
+                <li>Validate discount percentages against user limits</li>
+                <li>Check if customer exists (if provided)</li>
+                <li>Verify user is active cashier/manager</li>
+            </ul>
+
+            <h4>Phase 2: Read Current State (queries, no locks needed)</h4>
+            <ul>
+                <li>Fetch products by ID or barcode</li>
+                <li>Get available batches (FEFO query)</li>
+                <li>Verify expiry dates (reject expired batches)</li>
+                <li>Calculate total needed stock</li>
+            </ul>
+
+            <h4>Phase 3: Prepare Invoice Data (in-memory calculation)</h4>
+            <ul>
+                <li>For each item:</li>
+                <ul>
+                    <li>Apply discount if provided</li>
+                    <li>Extract tax by rate</li>
+                    <li>Create snapshot fields</li>
+                    <li>Calculate line totals</li>
+                </ul>
+                <li>Sum invoice totals</li>
+                <li>Generate unique QR token</li>
+            </ul>
+
+            <h4>Phase 4: Atomic Transaction (all or nothing)</h4>
+            <div class="code-block">
+BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE
+
+1. INSERT INTO invoices (...)
+   RETURNING id as invoice_id
+
+2. FOR EACH item:
+   INSERT INTO invoice_items (invoice_id, ...)
+
+3. FOR EACH item's stock allocation:
+   UPDATE stock_batches
+   SET quantity = quantity - allocation
+   WHERE batch_id = ...
+
+4. FOR EACH stock change:
+   INSERT INTO stock_movements (...)
+
+5. COMMIT
+   If any INSERT/UPDATE fails → ROLLBACK all changes
+
+6. If duplicate public_token → RETRY Phase 3 & 4
+            </div>
+
+            <h3>Transaction Isolation & Locking</h3>
+
+            <div class="card info">
+                <h4>Isolation Level: SERIALIZABLE</h4>
+                <p>Ensures no concurrent transactions interfere with invoice creation or stock allocation. This is critical for preventing overselling.</p>
+
+                <h4>Lock Strategy</h4>
+                <ul>
+                    <li>Database acquires locks on StockBatch rows during UPDATE</li>
+                    <li>If another transaction holds a lock, wait (or fail after timeout)</li>
+                    <li>Consider adding application-level retry logic with exponential backoff</li>
+                </ul>
+            </div>
+
+            <h3>Error Handling Within Transaction</h3>
+
+            <table>
+                <tr>
+                    <th>Error</th>
+                    <th>Action</th>
+                    <th>User Message</th>
+                </tr>
+                <tr>
+                    <td>Product not found</td>
+                    <td>Rollback</td>
+                    <td>"Product not found. Verify barcode."</td>
+                </tr>
+                <tr>
+                    <td>Stock exhausted</td>
+                    <td>Rollback</td>
+                    <td>"Insufficient stock for [Product]. Available: X units."</td>
+                </tr>
+                <tr>
+                    <td>Batch expired</td>
+                    <td>Rollback</td>
+                    <td>"Batch expired. Cannot use this stock."</td>
+                </tr>
+                <tr>
+                    <td>Duplicate public_token</td>
+                    <td>Retry entire flow</td>
+                    <td>Internal retry; transparent to user</td>
+                </tr>
+                <tr>
+                    <td>Database constraint violated</td>
+                    <td>Rollback</td>
+                    <td>"Error creating invoice. Contact support."</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section" id="edge-cases">
+            <h2>8. Edge Cases & Considerations</h2>
+
+            <h3>Decimal Rounding Edge Cases</h3>
+
+            <div class="card">
+                <h4>Scenario: Tax extraction with odd amounts</h4>
+                <p>When tax_per_unit doesn't divide evenly, rounding errors accumulate. Solution:</p>
+                <ul>
+                    <li>Always round per-unit tax to nearest paise</li>
+                    <li>Use standard banker's rounding (round half to even)</li>
+                    <li>Accept that invoice total may differ from manual calculation by 1-2 paise</li>
+                    <li>For reporting: verify tax grouping by rate sums correctly, not individual line exactness</li>
+                </ul>
+            </div>
+
+            <h3>Concurrent Transaction Conflicts</h3>
+
+            <div class="card warning">
+                <h4>Scenario: Two invoices created simultaneously, both using same batch</h4>
+                <p>With SERIALIZABLE isolation:</p>
+                <ul>
+                    <li>First transaction acquires lock on batch, creates invoice, commits</li>
+                    <li>Second transaction's stock query sees updated batch quantity</li>
+                    <li>If insufficient stock remains, second transaction rollbacks with clear error</li>
+                    <li>Cashier retries with remaining available batches</li>
+                </ul>
+            </div>
+
+            <h3>Partial Stock Allocation (Multi-Batch)</h3>
+
+            <div class="card">
+                <h4>Scenario: Product with 2 active batches (FEFO)</h4>
+                <p>Customer orders 150 units; Batch A (expiry soon) has 80, Batch B has 100.</p>
+                <ul>
+                    <li>Allocate 80 from Batch A (nearest expiry)</li>
+                    <li>Allocate 70 from Batch B (remaining)</li>
+                    <li>Create two InvoiceItem entries? <strong>No – one line item.</strong></li>
+                    <li>Store batch_id as first batch used; note in audit trail if multi-batch</li>
+                    <li>Stock movements record each batch separately for audit</li>
+                </ul>
+            </div>
+
+            <h3>Zero-Tax & Full-Discount Scenarios</h3>
+
+            <div class="card">
+                <h4>0% GST Items</h4>
+                <ul>
+                    <li>Tax extraction still runs; tax_amount_paise = 0</li>
+                    <li>Line total = unit_price × quantity (no tax extracted)</li>
+                    <li>Included in tax breakdown under "0% tax" grouping</li>
+                </ul>
+
+                <h4>100% Discount</h4>
+                <ul>
+                    <li>Allowed only for manager role (if configured)</li>
+                    <li>line_total_paise = 0</li>
+                    <li>Stock still deducted (for inventory accuracy)</li>
+                    <li>Tax still extracted (for compliance reporting)</li>
+                    <li>Invoice can have zero or negative total_amount_paise</li>
+                </ul>
+            </div>
+
+            <h3>Invoice Cancellation & Returns</h3>
+
+            <div class="card">
+                <h4>Cancellation (full reverse)</h4>
+                <ul>
+                    <li>Mark invoice as CANCELLED (not deleted)</li>
+                    <li>Return stock to original batch with reversing stock movements</li>
+                    <li>Keep all original data intact for audit trail</li>
+                    <li>Record cancellation reason and user in audit log</li>
+                </ul>
+
+                <h4>Partial Returns</h4>
+                <ul>
+                    <li>Create new invoice marked as RETURNED with negative quantities</li>
+                    <li>Link to original invoice via reference_id in stock movements</li>
+                    <li>Recalculate tax and totals for return invoice</li>
+                    <li>Return stock to inventory</li>
+                </ul>
+            </div>
+
+            <h3>Payment Method Validation</h3>
+
+            <div class="card">
+                <h4>Cash Payment</h4>
+                <ul>
+                    <li>amount_tendered_paise must be provided and ≥ total_amount_paise</li>
+                    <li>change_due_paise calculated automatically</li>
+                    <li>If amount_tendered < total_amount, reject transaction</li>
+                </ul>
+
+                <h4>Card/UPI Payment</h4>
+                <ul>
+                    <li>amount_tendered_paise not required (assumed exact)</li>
+                    <li>change_due_paise set to 0</li>
+                    <li>Payment processing handled separately (not in this service)</li>
+                </ul>
+            </div>
+
+            <h3>QR Token Collision Handling</h3>
+
+            <div class="card warning">
+                <h4>Very Rare: Duplicate Token Generated</h4>
+                <ul>
+                    <li>Probability: ~1 in 10^30 with 128-bit random tokens</li>
+                    <li>Application-level retry: Generate new token, check uniqueness, retry up to 5 times</li>
+                    <li>Database unique constraint as last-line defense</li>
+                    <li>If 5 retries fail, raise DataIntegrityError; user retries invoice creation</li>
+                </ul>
+            </div>
+
+            <h3>Invoice Number Sequencing</h3>
+
+            <div class="card">
+                <h4>Format: INV-YYYY-NNNNNN</h4>
+                <ul>
+                    <li>YYYY = Year (2026, 2027, etc.)</li>
+                    <li>NNNNNN = Zero-padded sequence (000001 to 999999)</li>
+                    <li>Sequence resets January 1 each year</li>
+                </ul>
+
+                <h4>Generation Method</h4>
+                <ul>
+                    <li>Query maximum invoice number for current year from database</li>
+                    <li>Extract sequence, increment by 1</li>
+                    <li>Format and validate uniqueness before commit</li>
+                    <li>Alternatively: use database sequence (recommended for concurrent performance)</li>
+                </ul>
+            </div>
+
+            <h3>Customer Loyalty Integration (Future)</h3>
+
+            <div class="card">
+                <h4>Current Implementation</h4>
+                <ul>
+                    <li>customer_id linked to invoice for loyalty tracking</li>
+                    <li>Customer.loyalty_points field reserved for future loyalty system</li>
+                </ul>
+
+                <h4>Future Consideration</h4>
+                <ul>
+                    <li>Award points per invoice based on amount spent</li>
+                    <li>Apply points-based discount in future phase</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section" id="implementation-checklist">
+            <h2>9. Implementation Checklist</h2>
+
+            <h3>BillingService Implementation</h3>
+            <ul class="checklist">
+                <li>create_invoice() with full atomic transaction flow</li>
+                <li>cancel_invoice() with stock reversal</li>
+                <li>apply_item_discount() with validation</li>
+                <li>get_invoice_by_public_token() for public API</li>
+                <li>Error handling for all validation scenarios</li>
+                <li>Logging and audit trail for all operations</li>
+            </ul>
+
+            <h3>Tax Calculation Service</h3>
+            <ul class="checklist">
+                <li>TaxCalculator.extract_tax() with rounding</li>
+                <li>TaxCalculator.calculate_line_tax() for items</li>
+                <li>TaxCalculator.group_taxes() by rate</li>
+                <li>Unit tests for all tax rates (0%, 5%, 12%, 18%, 28%)</li>
+                <li>Rounding accuracy tests</li>
+            </ul>
+
+            <h3>QR Code Generation</h3>
+            <ul class="checklist">
+                <li>QRTokenGenerator.generate_unique_token() with retry logic</li>
+                <li>QR code generation library integration (e.g., qrcode, pyqrcode)</li>
+                <li>QR code encoding with invoice number, date, and total</li>
+                <li>QR code SVG/image generation for printing</li>
+            </ul>
+
+            <h3>API Routes & Controllers</h3>
+            <ul class="checklist">
+                <li>POST /api/v1/invoices – Create invoice (authenticated)</li>
+                <li>GET /api/v1/invoices/{id} – Retrieve invoice (authenticated)</li>
+                <li>DELETE /api/v1/invoices/{id} – Cancel invoice (manager only)</li>
+                <li>GET /api/v1/public/bills/{public_token} – Public bill page (no auth)</li>
+                <li>Rate limiting middleware for public endpoint</li>
+                <li>Request/response validation with Pydantic schemas</li>
+            </ul>
+
+            <h3>Database Schema Updates</h3>
+            <ul class="checklist">
+                <li>Invoice table with all fields, indices</li>
+                <li>InvoiceItem table with snapshot fields</li>
+                <li>Unique constraint on (invoice_number)</li>
+                <li>Unique constraint on (public_token)</li>
+                <li>Index on (created_at) for time-based queries</li>
+                <li>Index on (customer_id) for loyalty queries</li>
+                <li>Index on (user_id) for cashier audit</li>
+            </ul>
+
+            <h3>Testing Strategy</h3>
+            <ul class="checklist">
+                <li>Unit tests: TaxCalculator (all rates, rounding)</li>
+                <li>Unit tests: QRTokenGenerator (uniqueness, retry)</li>
+                <li>Integration tests: create_invoice() with stock allocation</li>
+                <li>Integration tests: Concurrent invoice creation (isolation)</li>
+                <li>Integration tests: Cancellation and stock reversal</li>
+                <li>API tests: Public bill endpoint (rate limiting, 404 handling)</li>
+                <li>End-to-end tests: Full invoice flow with discount, tax, payment</li>
+            </ul>
+
+            <h3>Documentation</h3>
+            <ul class="checklist">
+                <li>API documentation (OpenAPI/Swagger)</li>
+                <li>Tax calculation examples with rounding</li>
+                <li>Transaction flow diagram</li>
+                <li>QR code format specification</li>
+                <li>Error codes and recovery procedures</li>
+            </ul>
+
+            <h3>Deployment Considerations</h3>
+            <ul class="checklist">
+                <li>Database migrations (alembic) for Invoice & InvoiceItem tables</li>
+                <li>Backward compatibility with existing User/Product/Customer tables</li>
+                <li>Performance testing with concurrent invoice creation</li>
+                <li>QR code generation performance (pre-generate or on-demand)</li>
+                <li>Rate limiting configuration (Redis or in-memory cache)</li>
+            </ul>
+
+            <h3>Business Rules Enforcement</h3>
+            <ul class="checklist">
+                <li>Prices are GST-inclusive (enforce in product creation)</li>
+                <li>Invoice numbers are sequential per year</li>
+                <li>QR tokens are non-sequential and non-enumerable</li>
+                <li>Stock is FEFO-allocated</li>
+                <li>Expired batches are never sold</li>
+                <li>Discounts respect user role limits</li>
+                <li>Invoices are immutable once created</li>
+            </ul>
+        </div>
+
+        <div class="section" id="summary">
+            <h2>Summary</h2>
+
+            <p>The billing engine architecture provides a robust, compliant foundation for POS operations:</p>
+
+            <div class="column-2">
+                <div class="card accent">
+                    <h4>Core Principles</h4>
+                    <ul>
+                        <li>Atomic transactions ensure consistency</li>
+                        <li>Invoice snapshots guarantee immutability</li>
+                        <li>Tax extraction is precise and auditable</li>
+                        <li>QR tokens are secure and non-enumerable</li>
+                    </ul>
+                </div>
+                <div class="card accent">
+                    <h4>Key Deliverables</h4>
+                    <ul>
+                        <li>BillingService with complete invoice lifecycle</li>
+                        <li>TaxCalculator for GST compliance</li>
+                        <li>QRTokenGenerator for secure bill access</li>
+                        <li>Public API with rate limiting</li>
+                        <li>Comprehensive test coverage</li>
+                    </ul>
+                </div>
+            </div>
+
+            <p style="margin-top: 2rem; padding-top: 2rem; border-top: 2px solid var(--border);">
+                <strong>Estimated Effort:</strong> 800–1000 lines of code
+            </p>
+            <ul>
+                <li>BillingService: ~300 lines</li>
+                <li>API routes: ~250 lines</li>
+                <li>Tax & QR utilities: ~100 lines</li>
+                <li>Tests: ~250–350 lines</li>
+            </ul>
+
+            <p><strong>Ready to proceed with Phase 3 implementation.</strong></p>
+        </div>
+    </div>
+</body>
+</html>

@@ -85,6 +85,7 @@ class Supplier(Base):
 
     # Relationships
     purchases = relationship("Purchase", back_populates="supplier", lazy="selectin")
+    products = relationship("Product", back_populates="supplier", lazy="selectin")
 
     def __repr__(self):
         return f"<Supplier(id={self.id}, name={self.name})>"
@@ -212,7 +213,7 @@ class StockMovement(Base):
     # Relationships
     product = relationship("Product", back_populates="stock_movements")
     batch = relationship("StockBatch", back_populates="stock_movements")
-    user = relationship("User", back_populates="audit_logs")
+    user = relationship("User")
 
     def __repr__(self):
         return f"<StockMovement(id={self.id}, type={self.movement_type.value}, qty={self.quantity})>"

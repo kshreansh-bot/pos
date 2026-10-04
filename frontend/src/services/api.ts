@@ -1,4 +1,11 @@
-import { LoginRequest, LoginResponse, User } from '../types';
+import {
+  LoginRequest,
+  LoginResponse,
+  User,
+  Product,
+  Invoice,
+  InvoiceCreate,
+} from '../types';
 
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
@@ -74,6 +81,51 @@ class ApiClient {
 
   async getUser(userId: number): Promise<User> {
     return this.request<User>(`/users/${userId}`);
+  }
+
+  // Product endpoints
+  async searchProducts(query: string, limit: number = 20): Promise<Product[]> {
+    return this.request<Product[]>(`/products/search/items?q=${encodeURIComponent(query)}&limit=${limit}`);
+  }
+
+  async listProducts(skip: number = 0, limit: number = 50, categoryId?: number, search?: string): Promise<Product[]> {
+    const params = new URLSearchParams();
+    params.append('skip', skip.toString());
+    params.append('limit', limit.toString());
+    if (categoryId) params.append('category_id', categoryId.toString());
+    if (search) params.append('search', search);
+    return this.request<Product[]>(`/products/?${params.toString()}`);
+  }
+
+  async getProduct(productId: number): Promise<Product> {
+    return this.request<Product>(`/products/${productId}`);
+  }
+
+  // Billing / Invoice endpoints
+  async createInvoice(invoiceData: InvoiceCreate): Promise<Invoice> {
+    return this.request<Invoice>('/invoices/create', {
+      method: 'POST',
+      body: JSON.stringify(invoiceData),
+    });
+  }
+
+  async getInvoice(invoiceId: number): Promise<Invoice> {
+    return this.request<Invoice>(`/invoices/${invoiceId}`);
+  }
+
+  async listInvoices(skip: number = 0, limit: number = 50): Promise<{ items: Invoice[]; total: number }> {
+    return this.request<{ items: Invoice[]; total: number }>(`/invoices/?skip=${skip}&limit=${limit}`);
+  }
+
+  async cancelInvoice(invoiceId: number, reason: string): Promise<Invoice> {
+    return this.request<Invoice>(`/invoices/${invoiceId}/cancel`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    });
+  }
+
+  getPublicBillHtmlUrl(publicToken: string): string {
+    return `${API_BASE}/bills/${publicToken}/html`;
   }
 }
 

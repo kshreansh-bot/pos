@@ -1,10 +1,12 @@
 """Main FastAPI application entry point."""
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.database import init_db
-from app.api import auth, users, products, suppliers, inventory
+from app.utils.errors import AppException
+from app.api import auth, users, products, suppliers, inventory, invoices, public, customers, reports
 
 
 @asynccontextmanager
@@ -26,6 +28,15 @@ app = FastAPI(
     redoc_url="/api/redoc",
 )
 
+# Exception handlers
+@app.exception_handler(AppException)
+async def app_exception_handler(request: Request, exc: AppException):
+    """Handle custom application exceptions."""
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.message, "error": exc.__class__.__name__}
+    )
+
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -41,6 +52,10 @@ app.include_router(users.router)
 app.include_router(products.router)
 app.include_router(suppliers.router)
 app.include_router(inventory.router)
+app.include_router(invoices.router)
+app.include_router(customers.router)
+app.include_router(reports.router)
+app.include_router(public.router)
 
 
 @app.get("/health")

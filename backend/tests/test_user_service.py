@@ -13,6 +13,8 @@ from app.services.user_service import (
 )
 from app.utils.errors import ValidationError, AuthenticationError, NotFoundError
 
+pytestmark = pytest.mark.asyncio
+
 
 @pytest.fixture
 async def test_db():
@@ -30,7 +32,6 @@ async def test_db():
     await engine.dispose()
 
 
-@pytest.mark.asyncio
 class TestCreateUser:
     """Test user creation."""
 
@@ -131,7 +132,6 @@ class TestCreateUser:
             assert user.role == role
 
 
-@pytest.mark.asyncio
 class TestGetUser:
     """Test user retrieval."""
 
@@ -178,7 +178,6 @@ class TestGetUser:
         assert user is None
 
 
-@pytest.mark.asyncio
 class TestAuthenticateUser:
     """Test user authentication."""
 
@@ -233,7 +232,6 @@ class TestAuthenticateUser:
         assert "inactive" in str(exc_info.value)
 
 
-@pytest.mark.asyncio
 class TestUpdateUser:
     """Test user updates."""
 

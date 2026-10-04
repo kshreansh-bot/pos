@@ -44,10 +44,13 @@ export interface Product {
   purchase_price_paise: number;
   selling_price_paise: number;
   gst_rate: number;
-  stock_quantity: number;
+  stock_quantity?: number;
   reorder_level: number;
-  is_active: boolean;
+  supplier_id?: number;
   default_discount_percent: number;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 // Cart types
@@ -67,14 +70,31 @@ export interface Cart {
   total_discount_paise: number;
   total_tax_paise: number;
   total_amount_paise: number;
+  bill_discount_paise: number;
 }
 
-// Invoice types
-export interface InvoiceItem {
+// Invoice creation types
+export interface InvoiceItemCreate {
+  product_id: number;
+  quantity: number;
+  discount_percent?: number;
+}
+
+export interface InvoiceCreate {
+  items: InvoiceItemCreate[];
+  customer_id?: number | null;
+  payment_method: 'cash' | 'card' | 'upi';
+  discount_paise?: number;
+  amount_tendered_paise?: number | null;
+}
+
+// Invoice response types
+export interface InvoiceItemResponse {
   id: number;
   product_id: number;
   product_name: string;
   product_barcode?: string;
+  product_unit: string;
   quantity: number;
   unit_price_paise: number;
   gst_rate: number;
@@ -82,42 +102,34 @@ export interface InvoiceItem {
   discount_paise: number;
   tax_amount_paise: number;
   line_total_paise: number;
+  created_at: string;
 }
 
 export interface Invoice {
   id: number;
   invoice_number: string;
-  customer_id?: number;
-  customer_name?: string;
+  customer_id?: number | null;
   user_id: number;
-  user_name?: string;
   subtotal_paise: number;
   total_discount_paise: number;
   total_tax_paise: number;
   total_amount_paise: number;
   payment_method: string;
-  amount_tendered_paise?: number;
-  change_due_paise?: number;
+  amount_tendered_paise?: number | null;
+  change_due_paise?: number | null;
   status: 'completed' | 'cancelled' | 'returned';
   notes?: string;
   public_token: string;
+  items: InvoiceItemResponse[];
   created_at: string;
-  items: InvoiceItem[];
 }
 
-// API Response types
-export interface ApiError {
-  detail: string;
-  error_code?: string;
-  status_code: number;
-}
-
-export interface PaginatedResponse<T> {
-  items: T[];
-  total: number;
-  page: number;
-  page_size: number;
-  total_pages: number;
+// Tax breakdown for invoices
+export interface TaxBreakdown {
+  rate: number;
+  base_amount_paise: number;
+  tax_amount_paise: number;
+  total_paise: number;
 }
 
 // Category types
@@ -152,8 +164,6 @@ export interface StockBatch {
   expiry_date?: string;
   is_active: boolean;
   created_at: string;
-  is_expired?: boolean;
-  is_expiring_soon?: boolean;
 }
 
 // Customer types
@@ -166,11 +176,4 @@ export interface Customer {
   loyalty_points: number;
   is_active: boolean;
   created_at: string;
-}
-
-// Tax breakdown for invoices
-export interface TaxBreakdown {
-  rate: number;
-  taxable_amount_paise: number;
-  tax_amount_paise: number;
 }
