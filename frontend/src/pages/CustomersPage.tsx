@@ -52,7 +52,7 @@ export const CustomersPage = () => {
       {loading ? (
         <div>Loading customers...</div>
       ) : (
-        <div style={{ background: 'white', borderRadius: '4px', border: '1px solid #ddd', overflowX: 'auto' }}>
+        <div style={{ borderRadius: '4px', border: '1px solid #646161', overflowX: 'auto' }}>
           <table className="pos-cart-table" style={{ width: '100%' }}>
             <thead>
               <tr>

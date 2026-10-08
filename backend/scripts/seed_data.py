@@ -43,9 +43,9 @@ async def create_seed_data():
                 max_discount_percent=50
             ),
             User(
-                username="cashier1",
+                username="shreansh",
                 email="cashier1@supermarket.com",
-                full_name="John Cashier",
+                full_name="shreansh ",
                 password_hash=hash_password("cashier123"),
                 role=UserRole.CASHIER,
                 is_active=True,

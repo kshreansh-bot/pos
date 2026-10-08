@@ -1,5 +1,6 @@
 """Alembic migrations environment configuration."""
 from logging.config import fileConfig
+from multiprocessing import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
@@ -27,6 +28,17 @@ def run_migrations_offline() -> None:
         target_metadata=Base.metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+    )
+
+    with context.begin_transaction():
+        context.run_migrations()
+
+
+def run_migrations(connection: Connection) -> None:
+    """Run migrations using a synchronous database connection."""
+    context.configure(
+        connection=connection,
+        target_metadata=Base.metadata,
     )
 
     with context.begin_transaction():

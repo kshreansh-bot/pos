@@ -1,4 +1,6 @@
 """API routes for product management."""
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, Header, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db_session
@@ -56,8 +58,8 @@ class ProductResponse(BaseModel):
     supplier_id: Optional[int]
     default_discount_percent: int
     is_active: bool
-    created_at: str
-    updated_at: Optional[str]
+    created_at: datetime
+    updated_at: Optional[datetime]
 
     class Config:
         from_attributes = True

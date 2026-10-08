@@ -47,7 +47,6 @@ class InvoiceItemResponse(BaseModel):
     discount_paise: int
     tax_amount_paise: int
     line_total_paise: int
-    created_at: datetime
 
     class Config:
         from_attributes = True
@@ -103,16 +102,24 @@ async def require_role_for_invoices(
         raise AuthorizationError("Insufficient permissions for this operation")
 
     return user
+async def get_current_invoice_user(
+    authorization: str = Header(None),
+    session: AsyncSession = Depends(get_db_session),
+) -> UserResponse:
+    return await require_role_for_invoices(
+        [UserRole.CASHIER, UserRole.MANAGER, UserRole.ADMIN],
+        authorization,
+        session,
+    )
 
 
 @router.post("/create", response_model=InvoiceResponse, status_code=status.HTTP_201_CREATED)
 async def create_invoice(
     invoice_create: InvoiceCreate,
     session: AsyncSession = Depends(get_db_session),
-    current_user: UserResponse = Depends(
-        lambda auth=Header(None), s=Depends(get_db_session):
-        require_role_for_invoices([UserRole.CASHIER, UserRole.MANAGER, UserRole.ADMIN], auth, s)
-    ),
+    current_user: UserResponse = Depends(get_current_invoice_user),
+     
+
 ):
     """Create a new invoice (cashier, manager, admin only)."""
     items = [item.model_dump() for item in invoice_create.items]

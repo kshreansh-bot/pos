@@ -41,6 +41,7 @@ class StockBatchResponse(BaseModel):
     expiry_date: Optional[datetime]
     is_active: bool
     created_at: datetime
+    
 
     class Config:
         from_attributes = True

@@ -83,7 +83,7 @@ export default function POSPage({ user, onLogout }: POSPageProps) {
     setCartItems((prevItems) => {
       const existingIndex = prevItems.findIndex((i) => i.product.id === product.id);
       if (existingIndex >= 0) {
-        // Increment quantity
+        // ... (rest of logic remains same)
         const updated = [...prevItems];
         const existing = updated[existingIndex];
         const newQty = existing.quantity + 1;
@@ -122,6 +122,8 @@ export default function POSPage({ user, onLogout }: POSPageProps) {
         },
       ];
     });
+    // Refocus search input for next scan
+    setTimeout(() => searchInputRef.current?.focus(), 50);
   };
 
   // Update Quantity for an item

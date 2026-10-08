@@ -68,7 +68,7 @@ export const ReturnsPage = () => {
       <h2>Returns &amp; Cancellations</h2>
       <p className="text-muted">Find an invoice by ID to process a cancellation.</p>
 
-      <div style={{ background: 'white', padding: '20px', borderRadius: '4px', border: '1px solid #ddd', marginBottom: '20px' }}>
+      <div style={{  padding: '20px', borderRadius: '4px', border: '1px solid #ddd', marginBottom: '20px' }}>
         <form onSubmit={handleSearch} style={{ display: 'flex', gap: '10px' }}>
           <input
             type="number"
@@ -86,7 +86,7 @@ export const ReturnsPage = () => {
       </div>
 
       {invoice && (
-        <div style={{ background: 'white', padding: '20px', borderRadius: '4px', border: '1px solid #ddd' }}>
+        <div style={{ padding: '20px', borderRadius: '4px', border: '1px solid #ddd' }}>
           <h3>Invoice #{invoice.invoice_number}</h3>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>

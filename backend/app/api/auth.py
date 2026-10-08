@@ -7,7 +7,7 @@ from app.services.auth_service import create_access_token, decode_token, extract
 from app.services.user_service import authenticate_user
 from app.utils.errors import AppException
 
-router = APIRouter(prefix="/auth", tags=["authentication"])
+router = APIRouter(prefix="/api/auth", tags=["authentication"])
 
 
 @router.post("/login", response_model=LoginResponse, status_code=status.HTTP_200_OK)

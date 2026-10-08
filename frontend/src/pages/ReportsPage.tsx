@@ -64,25 +64,25 @@ export const ReportsPage = () => {
       {!loading && !error && activeTab === 'sales' && salesData && (
         <div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '20px' }}>
-            <div style={{ background: '#f0fdf4', padding: '20px', borderRadius: '8px', border: '1px solid #bbf7d0' }}>
+            <div style={{ padding: '20px', borderRadius: '8px', border: '1px solid #bbf7d0' }}>
               <div className="text-muted">Net Sales</div>
               <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#166534' }}>
                 {formatRupees(salesData.net_sales_paise)}
               </div>
             </div>
-            <div style={{ background: '#f0f9ff', padding: '20px', borderRadius: '8px', border: '1px solid #bae6fd' }}>
+            <div style={{  padding: '20px', borderRadius: '8px', border: '1px solid #bae6fd' }}>
               <div className="text-muted">Total Invoices</div>
               <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#0369a1' }}>
                 {salesData.total_invoices_completed}
               </div>
             </div>
-            <div style={{ background: '#fef2f2', padding: '20px', borderRadius: '8px', border: '1px solid #fecaca' }}>
+            <div style={{padding: '20px', borderRadius: '8px', border: '1px solid #fecaca' }}>
               <div className="text-muted">Returns / Cancels</div>
               <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#991b1b' }}>
                 {salesData.total_invoices_returned + salesData.total_invoices_cancelled}
               </div>
             </div>
-            <div style={{ background: '#fdf4ff', padding: '20px', borderRadius: '8px', border: '1px solid #fbcfe8' }}>
+            <div style={{  padding: '20px', borderRadius: '8px', border: '1px solid #fbcfe8' }}>
               <div className="text-muted">Avg Order Value</div>
               <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#86198f' }}>
                 {formatRupees(salesData.average_order_value_paise)}
@@ -91,7 +91,7 @@ export const ReportsPage = () => {
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-            <div style={{ background: 'white', padding: '20px', borderRadius: '8px', border: '1px solid #ddd' }}>
+            <div style={{ padding: '20px', borderRadius: '8px', border: '1px solid #ddd' }}>
               <h3>GST Tax Breakdown</h3>
               <table className="pos-cart-table" style={{ width: '100%' }}>
                 <thead>
@@ -109,7 +109,7 @@ export const ReportsPage = () => {
                       <td className="text-right font-medium">{formatRupees(slab.tax_amount_paise)}</td>
                     </tr>
                   ))}
-                  <tr style={{ background: '#f9fafb', fontWeight: 'bold' }}>
+                  <tr style={{  fontWeight: 'bold' }}>
                     <td>Total</td>
                     <td className="text-right">-</td>
                     <td className="text-right">{formatRupees(salesData.total_tax_paise)}</td>
@@ -118,7 +118,7 @@ export const ReportsPage = () => {
               </table>
             </div>
 
-            <div style={{ background: 'white', padding: '20px', borderRadius: '8px', border: '1px solid #ddd' }}>
+            <div style={{  padding: '20px', borderRadius: '8px', border: '1px solid #ddd' }}>
               <h3>Payment Methods</h3>
               <table className="pos-cart-table" style={{ width: '100%' }}>
                 <thead>
@@ -144,7 +144,7 @@ export const ReportsPage = () => {
       )}
 
       {!loading && !error && activeTab === 'cashiers' && (
-        <div style={{ background: 'white', padding: '20px', borderRadius: '8px', border: '1px solid #ddd' }}>
+        <div style={{ padding: '20px', borderRadius: '8px', border: '1px solid #ddd' }}>
           <h3>Staff Performance (Trailing 30 Days)</h3>
           <table className="pos-cart-table" style={{ width: '100%' }}>
             <thead>
