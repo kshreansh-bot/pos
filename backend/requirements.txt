@@ -5,8 +5,10 @@ python-multipart>=0.0.12
 
 # Database
 sqlalchemy>=2.0.35
+greenlet>=3.0.0
 alembic>=1.14.0
 aiosqlite>=0.20.0
+
 
 # Validation
 pydantic>=2.10.0
