@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     database_url: str = "sqlite+aiosqlite:///./supermarket.db"
 
     # CORS
-    cors_origins: list[str] = ["http://localhost:5173", "http://localhost:3000"]
+    cors_origins: list[str] = ["http://localhost:5173", "http://localhost:3000" , "https://supermarket-billing-system-frontend .vercel.app"]
 
     # Business Rules
     days_to_expiry_warning: int = 7
