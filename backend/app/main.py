@@ -38,12 +38,17 @@ async def app_exception_handler(request: Request, exc: AppException):
     )
 
 # CORS middleware
+
 app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.cors_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+CORSMiddleware,
+allow_origins=[
+"https://supermarket-billing-system-frontend.vercel.app",
+"https://supermarket-billing-system-front-git-a54e3b-supermarket-billing.vercel.app",
+"https://supermarket-billing-system-527-1txh.vercel.app",
+],
+allow_credentials=True,
+allow_methods=[""],
+allow_headers=[""],
 )
 
 # Include routers
