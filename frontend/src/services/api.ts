@@ -15,7 +15,6 @@ const API_BASE = (
   import.meta.env.VITE_API_URL ||
   'https://supermarket-billing-system-527-1txh.vercel.app/api'
 ).replace(/\/$/, '');
-
 class ApiClient {
   private token: string | null = null;
 
