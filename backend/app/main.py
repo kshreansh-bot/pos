@@ -1,10 +1,18 @@
+import asyncio
+import sys
+
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(
+        asyncio.WindowsSelectorEventLoopPolicy()
+    )
 """Main FastAPI application entry point."""
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from sqlalchemy import text
+from app.database import async_session_maker, init_db
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
-from app.database import init_db
 from app.utils.errors import AppException
 from app.api import auth, users, products, suppliers, inventory, invoices, public, customers, reports
 
@@ -38,13 +46,12 @@ async def app_exception_handler(request: Request, exc: AppException):
     )
 
 # CORS middleware
-
 app.add_middleware(
-CORSMiddleware,
-allow_origin_regex=r"https://.*supermarket-billing.*\.vercel\.app",
-allow_credentials=True,
-allow_methods=[""],
-allow_headers=[""],
+    CORSMiddleware,
+    allow_origins=settings.cors_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Include routers
@@ -61,8 +68,23 @@ app.include_router(public.router)
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint."""
-    return {"status": "healthy", "environment": settings.environment}
+    """Health check including the database connection and basic row counts."""
+    try:
+        async with async_session_maker() as session:
+            products = (await session.execute(text("SELECT COUNT(*) FROM products"))).scalar_one()
+            invoices = (await session.execute(text("SELECT COUNT(*) FROM invoices"))).scalar_one()
+            customers = (await session.execute(text("SELECT COUNT(*) FROM customers"))).scalar_one()
+        return {
+            "status": "healthy",
+            "environment": settings.environment,
+            "database": "connected",
+            "counts": {"products": products, "invoices": invoices, "customers": customers},
+        }
+    except Exception as exc:
+        return JSONResponse(
+            status_code=503,
+            content={"status": "unhealthy", "environment": settings.environment, "database": "error", "detail": str(exc)},
+        )
 
 
 @app.get("/")
