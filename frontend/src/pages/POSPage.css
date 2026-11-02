@@ -5,8 +5,8 @@
   flex-direction: column;
   height: 100vh;
   width: 100vw;
-  background-color: #f1f5f9;
-  color: #0f172a;
+  background-color: #f8fafc;
+  color: #1e293b;
   overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
@@ -33,12 +33,12 @@
   font-size: 1.25rem;
   font-weight: 700;
   margin: 0;
-  color: #38bdf8;
+  color: #a5b4fc;
   letter-spacing: -0.025em;
 }
 
 .pos-badge {
-  background: #0ea5e9;
+  background: #4f46e5;
   color: #ffffff;
   font-size: 0.7rem;
   font-weight: 600;
@@ -67,7 +67,7 @@
 
 .hotkey-pill kbd {
   background: #0f172a;
-  color: #38bdf8;
+  color: #a5b4fc;
   padding: 0.1rem 0.35rem;
   border-radius: 3px;
   font-family: monospace;
@@ -113,7 +113,7 @@
 }
 
 .btn-logout {
-  background: #dc2626;
+  background: #e11d48;
   color: white;
   padding: 0.4rem 0.75rem;
   border-radius: 4px;
@@ -121,7 +121,7 @@
 }
 
 .btn-logout:hover {
-  background: #b91c1c;
+  background: #be123c;
 }
 
 /* Main Split Screen Container */
@@ -153,7 +153,7 @@
   display: flex;
   align-items: center;
   background: #ffffff;
-  border: 2px solid #3b82f6;
+  border: 2px solid #6366f1;
   border-radius: 8px;
   padding: 0.5rem 0.85rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -221,7 +221,7 @@
   align-items: center;
   padding: 0.65rem 1rem;
   cursor: pointer;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid #f8fafc;
   transition: background-color 0.15s;
 }
 
@@ -231,7 +231,7 @@
 
 .pos-search-item.selected,
 .pos-search-item:hover {
-  background-color: #eff6ff;
+  background-color: #eef2ff;
 }
 
 .pos-search-item-info {
@@ -252,7 +252,7 @@
 
 .pos-search-item-barcode {
   font-size: 0.75rem;
-  color: #0ea5e9;
+  color: #4f46e5;
   font-family: monospace;
 }
 
@@ -287,15 +287,15 @@
 }
 
 .pos-notification.error {
-  background: #fee2e2;
-  color: #991b1b;
-  border: 1px solid #f87171;
+  background: #fff1f2;
+  color: #9f1239;
+  border: 1px solid #fda4af;
 }
 
 .pos-notification.success {
-  background: #dcfce7;
-  color: #166534;
-  border: 1px solid #86efac;
+  background: #ccfbf1;
+  color: #115e59;
+  border: 1px solid #99f6e4;
 }
 
 .pos-notification-dismiss {
@@ -359,7 +359,7 @@
 
 .pos-cart-table td {
   padding: 0.6rem 0.75rem;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid #f8fafc;
   vertical-align: middle;
 }
 
@@ -390,7 +390,7 @@
 }
 
 .pos-qty-btn {
-  background: #f1f5f9;
+  background: #f8fafc;
   color: #334155;
   border: none;
   width: 26px;
@@ -445,7 +445,7 @@
 .pos-remove-btn {
   background: none;
   border: none;
-  color: #ef4444;
+  color: #e11d48;
   font-size: 1rem;
   cursor: pointer;
   border-radius: 4px;
@@ -453,7 +453,7 @@
 }
 
 .pos-remove-btn:hover {
-  background: #fee2e2;
+  background: #fff1f2;
 }
 
 /* Right Panel: Cart Summary */
@@ -512,7 +512,7 @@
 }
 
 .text-success {
-  color: #16a34a !important;
+  color: #0f766e !important;
 }
 
 .pos-discount-row {
@@ -578,7 +578,7 @@
 
 .pos-total-amount {
   font-size: 1.45rem;
-  color: #0284c7;
+  color: #4338ca;
   font-weight: 800;
 }
 
@@ -590,7 +590,7 @@
 
 .btn-pos-clear {
   flex: 1;
-  background: #f1f5f9;
+  background: #f8fafc;
   color: #475569;
   border: 1px solid #cbd5e1;
   padding: 0.75rem;
@@ -600,14 +600,14 @@
 }
 
 .btn-pos-clear:hover:not(:disabled) {
-  background: #fee2e2;
-  color: #b91c1c;
-  border-color: #f87171;
+  background: #fff1f2;
+  color: #be123c;
+  border-color: #fda4af;
 }
 
 .btn-pos-checkout {
   flex: 2;
-  background: #0ea5e9;
+  background: #4f46e5;
   color: #ffffff;
   border: none;
   padding: 0.75rem;
@@ -618,7 +618,7 @@
 }
 
 .btn-pos-checkout:hover:not(:disabled) {
-  background: #0284c7;
+  background: #4338ca;
 }
 
 /* Modals */
@@ -666,8 +666,8 @@
 }
 
 .pos-modal-total-banner {
-  background: #f0f9ff;
-  border: 1px solid #bae6fd;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
   border-radius: 8px;
   padding: 1rem;
   text-align: center;
@@ -680,14 +680,14 @@
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #0369a1;
+  color: #4338ca;
   font-weight: 600;
 }
 
 .pos-modal-total-value {
   font-size: 1.85rem;
   font-weight: 800;
-  color: #0284c7;
+  color: #4338ca;
 }
 
 /* Payment Tabs */
@@ -708,9 +708,9 @@
 }
 
 .pos-payment-tab.active {
-  background: #0ea5e9;
+  background: #4f46e5;
   color: #ffffff;
-  border-color: #0ea5e9;
+  border-color: #4f46e5;
 }
 
 /* Tendered & Cash Form */
@@ -730,7 +730,7 @@
 .pos-tendered-input-wrapper {
   display: flex;
   align-items: center;
-  border: 2px solid #0ea5e9;
+  border: 2px solid #4f46e5;
   border-radius: 6px;
   padding: 0.4rem 0.75rem;
   background: #ffffff;
@@ -759,7 +759,7 @@
 }
 
 .btn-preset {
-  background: #f1f5f9;
+  background: #f8fafc;
   border: 1px solid #cbd5e1;
   color: #334155;
   padding: 0.35rem 0.6rem;
@@ -788,13 +788,13 @@
 }
 
 .pos-change-row.success .pos-change-amount {
-  color: #16a34a;
+  color: #0f766e;
   font-size: 1.25rem;
   font-weight: 800;
 }
 
 .pos-change-row.danger .pos-change-amount {
-  color: #dc2626;
+  color: #e11d48;
   font-size: 1.25rem;
   font-weight: 800;
 }
@@ -832,8 +832,8 @@
 }
 
 .pos-success-badge {
-  background: #dcfce7;
-  color: #16a34a;
+  background: #ccfbf1;
+  color: #0f766e;
   width: 56px;
   height: 56px;
   border-radius: 50%;
@@ -845,9 +845,9 @@
 }
 
 .pos-invoice-badge {
-  background: #f1f5f9;
+  background: #f8fafc;
   border: 1px solid #cbd5e1;
-  color: #0369a1;
+  color: #4338ca;
   font-family: monospace;
   font-weight: 700;
   font-size: 1.1rem;
@@ -911,3 +911,25 @@
 .text-uppercase { text-transform: uppercase; }
 .font-medium { font-weight: 500; }
 .font-bold { font-weight: 700; }
+
+/* Refined indigo header treatment */
+.pos-topbar {
+  background: linear-gradient(120deg, #0f172a 0%, #1e293b 58%, #312e81 100%);
+  border-bottom: 1px solid rgba(165, 180, 252, 0.3);
+}
+
+.pos-cart-container,
+.pos-summary-card,
+.pos-search-input-wrapper {
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+}
+
+.btn-pos-checkout,
+.pos-payment-tab.active {
+  background: linear-gradient(135deg, #4f46e5, #4338ca);
+}
+
+.btn-pos-checkout:hover:not(:disabled),
+.pos-payment-tab.active:hover {
+  background: linear-gradient(135deg, #4338ca, #3730a3);
+}

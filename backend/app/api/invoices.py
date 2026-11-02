@@ -276,7 +276,7 @@ async def get_invoice_qr(
     invoice_id: int,
     session: AsyncSession = Depends(get_db_session),
     authorization: str = Header(None),
-    format: str = Query("png", regex="^(png|data-uri)$"),
+    format: str = Query("png", pattern="^(png|data-uri)$"),
 ):
     """Get QR code for invoice (any authenticated user)."""
     token = extract_token_from_header(authorization)
